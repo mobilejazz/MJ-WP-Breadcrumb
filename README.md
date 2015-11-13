@@ -33,6 +33,17 @@ $active_class = 'active'     // A class applied to the list-item of the current 
 $echo = false                // false to return, true to echo
 ```
 
+Typical output would be:
+
+```
+<ol id="breadcrumb" class="breadcrumb">
+  <li><a href="#">Home</a></li>
+  <li><a href="#">Blog</a></li>
+  <li><a href="#">Category</a></li>
+  <li class="active">Post Title</li>
+</ol>
+```
+
 ### For Use with Bootstrap
 
 To use this function with Bootstrap, call the function with these parameters:

@@ -2,7 +2,7 @@
     /*!
      * MJ WordPress Breadcrumb
      * Description: A lightweight, customisable function to generate and display a breadcrumb for WordPress.
-     * Version: 1.0
+     * Version: 1.1
      * Author: Mobile Jazz
      * Url: http://www.mobilejazz.com/
      * License: http://www.apache.org/licenses/LICENSE-2.0
@@ -121,6 +121,107 @@
             if ( is_404() ) {
                 $breadcrumb .= '<li class="' . $active_class . '">' . __( '404', $text_domain ) . '</li>';
             }
+
+            // Custom Post Type Archive
+			if ( is_post_type_archive() ) {
+				$breadcrumb .= '<li class="' . $active_class . '">' . post_type_archive_title( '', false ) . '</li>';
+			}
+
+			// Custom Taxonomies
+			if ( is_tax() ) {
+				// Get the post types the taxonomy is attached to
+				$current_term = get_queried_object();
+
+				$attached_to = array();
+				$post_types = get_post_types();
+
+				foreach ( $post_types as $post_type ) {
+					$taxonomies = get_object_taxonomies( $post_type );
+
+					if ( in_array( $current_term->taxonomy, $taxonomies ) ) {
+						$attached_to[] = $post_type;
+					}
+				}
+
+				// Post type archive link
+				$output = false;
+
+				foreach ( $attached_to as $post_type ) {
+					$cpt_obj = get_post_type_object( $post_type );
+
+					if ( ! $output && get_post_type_archive_link( $cpt_obj->name ) ) {
+						$breadcrumb .= '<li><a href="' . get_post_type_archive_link( $cpt_obj->name ) . '">' . $cpt_obj->labels->name . '</a></li>';
+						$output = true;
+					}
+				}
+
+				// Term title
+				$breadcrumb .= '<li class="' . $active_class . '">' . single_term_title( '', false ) . '</li>';
+			}
+
+			// Custom Post Types
+			if ( is_single() && get_post_type() != 'post' && get_post_type() != 'attachment' ) {
+				$cpt_obj = get_post_type_object( get_post_type() );
+
+				// Is cpt hierarchical like pages or posts?
+				if ( is_post_type_hierarchical( $cpt_obj->name ) ) {
+					// Like pages
+
+					// Cpt archive
+					if ( get_post_type_archive_link( $cpt_obj->name ) ) {
+						$breadcrumb .= '<li><a href="' . get_post_type_archive_link( $cpt_obj->name ) . '">' . $cpt_obj->labels->name . '</a></li>';
+					}
+
+					// Cpt parents
+					$post = get_post( get_the_ID() );
+
+					if ( $post->post_parent ) {
+						$parent_id  = $post->post_parent;
+						$crumbs = array();
+
+						while ( $parent_id ) {
+							$page = get_page( $parent_id );
+							$crumbs[] = '<a href="' . get_permalink( $page->ID ) . '">' . get_the_title( $page->ID ) . '</a>';
+							$parent_id  = $page->post_parent;
+						}
+
+						$crumbs = array_reverse( $crumbs );
+
+						foreach ( $crumbs as $crumb ) {
+							$breadcrumb .= '<li>' . $crumb . '</li>';
+						}
+					}
+				} else {
+					// Like posts
+
+					// Cpt archive
+					if ( get_post_type_archive_link( $cpt_obj->name ) ) {
+						$breadcrumb .= '<li><a href="' . get_post_type_archive_link( $cpt_obj->name ) . '">' . $cpt_obj->labels->name . '</a></li>';
+					}
+
+					// Get cpt taxonomies
+					$cpt_taxes = get_object_taxonomies( $cpt_obj->name );
+
+					if ( $cpt_taxes && is_taxonomy_hierarchical( $cpt_taxes[0] ) ) {
+						// Other taxes attached to the cpt could be hierachical, so need to look into that.
+						$cpt_terms = get_the_terms( get_the_ID(), $cpt_taxes[0] );
+
+						if ( is_array( $cpt_terms ) ) {
+							$output = false;
+
+							foreach( $cpt_terms as $cpt_term ) {
+								if ( ! $output ) {
+									$breadcrumb .= '<li><a href="' . get_term_link( $cpt_term->name, $cpt_taxes[0] ) . '">' . $cpt_term->name . '</a></li>';
+									$output = true;
+								}
+							}
+						}
+					}
+				}
+
+				// Cpt title
+				$breadcrumb .= '<li class="' . $active_class . '">' . get_the_title() . '</li>';
+			}
 
             // Close list
             $breadcrumb .= '</' . $list_style . '>';

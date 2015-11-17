@@ -78,11 +78,12 @@ Pull request are welcome, please make sure your modifications are well tested.
 
 If you have an idea or a request, you may raise an issue. Please provide as much detail as possible, demos and examples would be fantastic if appropriate.
 
-## Todo & Possible Future Features
-
-* Custom Post Type and Custom Taxonomy Support
-
 ## Version History
+
+### 1.1
+*November 17, 2015*
+
+Added support for custom post types and taxonomies.
 
 ### 1.0
 *November 12, 2015*
